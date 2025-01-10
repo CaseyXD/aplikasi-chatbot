@@ -47,6 +47,10 @@ class ChatBotApp:
         self.history_button = tk.Button(root, text="History", command=self.show_history, font=("Arial", 12))
         self.history_button.grid(row=1, column=2, padx=10, pady=10)
 
+        # Tombol untuk menghapus history
+        self.clear_button = tk.Button(root, text="Clear History", command=self.clear_history, font=("Arial", 12), fg="red")
+        self.clear_button.grid(row=2, column=0, columnspan=3)
+
         # Menambahkan tag warna untuk teks
         self.chat_area.tag_configure("you", foreground="blue", font=("Arial", 12, "bold"))
         self.chat_area.tag_configure("ai", foreground="green", font=("Arial", 12, "bold"))
@@ -54,7 +58,7 @@ class ChatBotApp:
 
         # Label untuk loading
         self.loading_label = tk.Label(root, text="", font=("Arial", 12), fg="gray")
-        self.loading_label.grid(row=2, column=0, columnspan=3)
+        self.loading_label.grid(row=3, column=0, columnspan=3)
 
     def handle_input(self):
         user_text = self.user_input.get().strip()
@@ -119,20 +123,28 @@ class ChatBotApp:
         else:
             self.display_popup("Chat History", "No history found.")
 
+    def clear_history(self):
+        """Menghapus history dari file."""
+        if os.path.exists(self.history_file):
+            os.remove(self.history_file)
+            self.display_popup("Clear History", "History has been cleared!")
+        else:
+            self.display_popup("Clear History", "No history found to clear.")
+
     def display_popup(self, title, content):
         """Menampilkan jendela popup dengan konten tertentu."""
         popup = tk.Toplevel(self.root)
         popup.title(title)
         popup.geometry("500x400")
 
-        # Text area untuk history
-        history_text = tk.Text(popup, wrap=tk.WORD, bg="white", font=("Arial", 12))
-        history_text.insert(tk.END, content)
-        history_text.config(state=tk.DISABLED)
-        history_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Text area untuk konten
+        content_text = tk.Text(popup, wrap=tk.WORD, bg="white", font=("Arial", 12))
+        content_text.insert(tk.END, content)
+        content_text.config(state=tk.DISABLED)
+        content_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
 # Main Program
 if __name__ == "__main__":
     root = tk.Tk()
     app = ChatBotApp(root)
-    root.mainloop()
+    root.mainloop() 
