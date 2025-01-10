@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import scrolledtext
 import threading
 import time
+import os
 
 # Template untuk prompt
 template = """
@@ -25,12 +26,13 @@ chain = prompt | model
 class ChatBotApp:
     def __init__(self, root):
         self.context = ""
+        self.history_file = "history.txt"  # Nama file untuk menyimpan history
         self.root = root
         self.root.title("AI ChatBot")
         
         # Text area untuk menampilkan percakapan
         self.chat_area = tk.Text(root, wrap=tk.WORD, width=70, height=20, state=tk.DISABLED, bg="white", font=("Arial", 12))
-        self.chat_area.grid(row=0, column=0, padx=10, pady=10, columnspan=2)
+        self.chat_area.grid(row=0, column=0, padx=10, pady=10, columnspan=3)
 
         # Entry untuk input pengguna
         self.user_input = tk.Entry(root, width=50, font=("Arial", 12))
@@ -41,6 +43,10 @@ class ChatBotApp:
         self.send_button = tk.Button(root, text="Send", command=self.handle_input, font=("Arial", 12))
         self.send_button.grid(row=1, column=1, padx=10, pady=10)
 
+        # Tombol untuk membuka history
+        self.history_button = tk.Button(root, text="History", command=self.show_history, font=("Arial", 12))
+        self.history_button.grid(row=1, column=2, padx=10, pady=10)
+
         # Menambahkan tag warna untuk teks
         self.chat_area.tag_configure("you", foreground="blue", font=("Arial", 12, "bold"))
         self.chat_area.tag_configure("ai", foreground="green", font=("Arial", 12, "bold"))
@@ -48,7 +54,7 @@ class ChatBotApp:
 
         # Label untuk loading
         self.loading_label = tk.Label(root, text="", font=("Arial", 12), fg="gray")
-        self.loading_label.grid(row=2, column=0, columnspan=2)
+        self.loading_label.grid(row=2, column=0, columnspan=3)
 
     def handle_input(self):
         user_text = self.user_input.get().strip()
@@ -74,6 +80,9 @@ class ChatBotApp:
         self.append_to_chat(f"AI: {ai_response}", "ai")
         self.context += f"\nUser: {user_text}\nAI: {ai_response}\n"
 
+        # Simpan percakapan ke file
+        self.save_to_history(f"You: {user_text}\nAI: {ai_response}\n")
+
     def show_loading(self, is_loading):
         """Menampilkan atau menyembunyikan simbol loading."""
         if is_loading:
@@ -95,6 +104,32 @@ class ChatBotApp:
         self.chat_area.insert(tk.END, text + "\n", "message")  # Tambahkan pesan dengan warna hitam
         self.chat_area.see(tk.END)
         self.chat_area.config(state=tk.DISABLED)
+
+    def save_to_history(self, conversation):
+        """Simpan percakapan ke file."""
+        with open(self.history_file, "a") as file:
+            file.write(conversation)
+
+    def show_history(self):
+        """Menampilkan history percakapan dari file."""
+        if os.path.exists(self.history_file):
+            with open(self.history_file, "r") as file:
+                history = file.read()
+            self.display_popup("Chat History", history)
+        else:
+            self.display_popup("Chat History", "No history found.")
+
+    def display_popup(self, title, content):
+        """Menampilkan jendela popup dengan konten tertentu."""
+        popup = tk.Toplevel(self.root)
+        popup.title(title)
+        popup.geometry("500x400")
+
+        # Text area untuk history
+        history_text = tk.Text(popup, wrap=tk.WORD, bg="white", font=("Arial", 12))
+        history_text.insert(tk.END, content)
+        history_text.config(state=tk.DISABLED)
+        history_text.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
 # Main Program
 if __name__ == "__main__":
